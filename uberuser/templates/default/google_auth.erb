@@ -1,0 +1,96 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'rotp'
+require 'time'
+
+user = ARGV[0]
+secret = ARGV[1]
+abort unless user and secret
+
+trap("INT") do
+  abort
+end
+
+class TwoFactorSSH
+  LOG_FILE = "#{ENV['HOME']}/.ssh/two_factor.log"
+
+  def initialize(options={})
+    @user = options[:user]
+    @secret = options[:secret]
+    @debug = options[:debug]
+
+    @client_ip = ENV['SSH_CLIENT'].split.first
+
+    last_log_entry = File.read(LOG_FILE).each_line.grep(/^#{@user}@#{@client_ip}/).last rescue nil
+    if last_log_entry
+      @last_login = Time.parse(last_log_entry.split("\t")[1])
+      @last_auth = Time.parse(last_log_entry.split("\t")[2])
+      @remember_me = last_log_entry.split("\t")[3].strip
+    end
+  end
+
+  def run!
+    begin
+      STDERR.write "Connection from #{@user}@#{@client_ip}\n" if @debug 
+      unless already_validated?
+        @validation_code = get_validation_code
+        abort unless validates?
+        @remember_me = get_remember_me
+      end
+      log_access
+      shell_out!
+    rescue Exception => e
+      STDERR.write "Logout\n\n"
+      puts e.message if @debug
+      puts e.backtrace.join("\n") if @debug
+    end
+  end
+
+  def already_validated?
+    return false unless @last_auth and @remember_me
+    case @remember_me
+      when 'a' then return true
+      when 'd' then return true if @last_auth > Time.now.utc - (60*60*24) 
+      when 'm' then return true if @last_auth > Time.now.utc - (60*60*24*30)
+      when 'y' then return true if @last_auth > Time.now.utc - (60*60*24*365)
+      else return false
+    end 
+  end
+
+  def get_validation_code 
+    STDERR.write "#{ENV['USER']}@#{`hostname -s`.strip} Validation Code: "
+    until validation_code = STDIN.gets.strip
+      sleep 1
+    end; validation_code
+  end
+
+  def validates?
+    @validation_code == ROTP::TOTP.new(@secret).now.to_s
+    @last_auth = Time.now.utc
+  end
+
+  def get_remember_me
+    STDERR.write "Remember this auth? (Never, Always, Day, Month, Year): "
+    until answer = STDIN.gets.strip
+      sleep 1
+    end; answer
+  end
+
+  def log_access
+    log = "#{@user}@#{@client_ip}\t#{Time.now.utc.to_s}\t#{@last_auth}\t#{@remember_me}"
+    `echo "#{log}" >> #{LOG_FILE}`
+  end
+
+  def shell_out!
+    if ENV['SSH_ORIGINAL_COMMAND']
+      Kernel.exec ENV['SSH_ORIGINAL_COMMAND']
+    elsif File.exists?('/usr/bin/motd+shell')
+      Kernel.exec '/usr/bin/motd+shell'
+    else
+      Kernel.exec ENV['SHELL']
+    end
+  end
+
+end
+
+TwoFactorSSH.new(:user => user, :secret => secret, :debug => true).run!

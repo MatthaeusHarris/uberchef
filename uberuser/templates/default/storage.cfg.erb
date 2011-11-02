@@ -1,0 +1,13 @@
+dir: local
+	path /var/lib/vz
+	content images,iso,vztmpl,rootdir
+
+dir: CloudImages
+	path /mnt/gluster/vm
+	shared
+	content images
+
+dir: CloudIsos
+	path /mnt/gluster/vm
+	shared
+	content iso

@@ -1,0 +1,39 @@
+= DESCRIPTION:
+This is a preliminary version of the RCG users script.  Global admins are loaded from data bags.  Local and role-defined users are listed in the local and role-defined attributes and loaded from data bags.
+
+The data bags are as follows:
+
+groups:  contains the group information
+users:  contains the user information, including ssh-key information.
+
+= REQUIREMENTS:
+
+= ATTRIBUTES:
+Roles can provide the users and groups attributes, which should be flat lists of users and groups found in the users and groups data bags.
+Nodes can provide the localusers and localgroups attributes, which should be flat lists of users and groups found in the users and groups data bags.
+
+= USAGE:
+
+
+= Google Auth
+You can use the Google Auth recipe to provide two factor ssh authentication with the Google auth service.
+
+In order to use it, you need to do two things:
+
+== 1) Generate a secret key
+Use the following snippet to generate a QR code that can be scanned into a Google Authenticator:
+
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'rotp'
+ 
+secret = ROTP::Base32.random_base32
+data = "otpauth://totp/#{`hostname -s`.strip}?secret=#{secret}"
+url = "https://chart.googleapis.com/chart?chs=200x200&chld=M|0&cht=qr&chl=#{data}"
+ 
+puts "Your secret key is: #{secret}"
+puts url
+
+== 2) Customize your data bag user  attributes to have the following prepended to it:
+
+command="/usr/bin/googel_auth <your secret key>" ssh-dsa AAA...zzz me@example.com

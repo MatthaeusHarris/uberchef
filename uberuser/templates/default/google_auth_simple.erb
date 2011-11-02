@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'rotp'
+ 
+# we'll pass in a secret to this script from the authorized_keys file
+user = ARGV[0]
+abort unless secret = ARGV[1]
+ 
+# prompt the user for their validation code
+ 
+STDERR.write "Enter the validation code: "
+until validation_code = STDIN.gets.strip
+  sleep 1
+end
+ 
+# check the validation code is correct
+ 
+abort "Invalid" unless validation_code == ROTP::TOTP.new(secret).now.to_s
+ 
+# user has validated so we'll give them their shell
+ 
+Kernel.exec ENV['SSH_ORIGINAL_COMMAND'] || ENV['SHELL']
