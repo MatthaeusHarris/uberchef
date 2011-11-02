@@ -1,7 +1,7 @@
 require "pp"
 
 define :rcg_user do
-#  pp params
+  pp params
   useritem = data_bag_item("users",params[:name])
 #  pp useritem["ssh"]["dsa_id"]
   useritem["username"] = params[:name] unless useritem["username"]
