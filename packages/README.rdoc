@@ -1,0 +1,8 @@
+= DESCRIPTION:
+Pull a list of packages from the node["packages"] attribute and install them.
+= REQUIREMENTS:
+None.
+= ATTRIBUTES:
+node["packages"] should contain an array, in order, of packages to install.
+= USAGE:
+See above.
