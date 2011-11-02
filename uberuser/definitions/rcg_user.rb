@@ -6,7 +6,8 @@ define :rcg_user do
 #  pp useritem["ssh"]["dsa_id"]
   useritem["username"] = params[:name] unless useritem["username"]
   useritem["home"] = "/home/" + useritem["username"] unless useritem["home"]
-  pp useritem
+  useritem["gid"] = "users" unless useritem["gid"]
+#   pp useritem
   user useritem["username"] do
     comment     useritem["comment"]
     uid         useritem["uid"]
