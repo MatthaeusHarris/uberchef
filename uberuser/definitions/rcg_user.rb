@@ -34,7 +34,7 @@ define :rcg_user do
     mode    "0644"
     owner   useritem["username"]
     variables(
-      :ssh_key => useritem["ssh"]["dsa_id"]
+      :ssh_keys => useritem["ssh-keys"]
     )
   end
 end

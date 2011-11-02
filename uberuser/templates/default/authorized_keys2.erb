@@ -4,4 +4,6 @@
 # !!!!!!  chef-client IS CALLED BY cron  !!!!!!
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
-<%= @ssh_key %>
+<% @ssh_key.each do |key| -%>
+<%= key %>
+<%= end -%>
