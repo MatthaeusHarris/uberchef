@@ -33,15 +33,15 @@ group "admin" do
   members   adminlist
 end
 
-template "/etc/sudoers" do
-  source "sudoers.erb"
-  mode 0440
-  owner "root"
-  group "root"
-  variables(
-    :sudoers_append => node[:sudoers_append]
-  )
-end
+# template "/etc/sudoers" do
+#   source "sudoers.erb"
+#   mode 0440
+#   owner "root"
+#   group "root"
+#   variables(
+#     :sudoers_append => node[:sudoers_append]
+#   )
+# end
 
 @local_users = []
 begin
