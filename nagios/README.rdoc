@@ -1,0 +1,198 @@
+= DESCRIPTION:
+
+Installs and configures Nagios 3 for a server and for clients using Chef 0.8 search capabilities.
+
+= REQUIREMENTS:
+
+Requires Chef 0.8+ for search capability of roles and data bags.
+
+A data bag named 'users' should exist, see "DATA BAG" below.
+
+The monitoring server that uses this recipe should have a role named 'monitoring' or similar. See "ROLES" below.
+
+Because of the heavy use of search, this recipe will not work with Chef Solo, as it cannot do any searches without a server.
+
+== Platform:
+
+Tested on Ubuntu 9.04+ and Debian 5+.
+
+== Cookbooks:
+
+* apache2
+
+= ATTRIBUTES:
+
+Attributes under the 'nagios' namespace.
+
+== Client:
+
+The following attributes are used for the client NRPE checks for warning and critical levels.
+
+server_role - the role that the nagios server will have in its run list that the clients can search for.
+
+Client also supports the ability to create nrpe checks via attributes and the nrpe_cmd definition
+
+Steps required to add check:
+
+1) Add a new nrpe cmd
+=====================
+nrpe_cmd node[:nagios][:checks][:load][:check_command] do
+        script_name "check_load"
+        script_params "-w #{node[:nagios][:checks][:load][:warning]} -c #{node[:nagios][:checks][:load][:critical]}"
+end
+
+default[:nagios][:checks][:load][:check_command] = "check_load"
+default[:nagios][:checks][:load][:command_line] = "$USER1$/check_nrpe -H $HOSTADDRESS$ -c check_load -t 20"
+default[:nagios][:checks][:load][:service_description] = "Load averages on Host"
+default[:nagios][:checks][:load][:critical]   = "30,20,10"
+default[:nagios][:checks][:load][:warning]    = "15,10,5"
+
+2) Ensure the script is on the client by adding it to files/default/plugins
+2.1) Add script to plugins/any if it applies to any architecture(ie shell/perl/ruby script)
+2.2) Add script to plugins/<arch> if it applies only to a particular architecture(i686 or x86_64). Recipe checks node[:kernel][:machine] for arch folder
+3) Next time the chef-client runs on the client it will add the nrpe check to the system and copy the script over and sets up the attributes for that node
+4) Next time the chef-client runs on the server it will add the check to the system by adding entries to services.cfg and commands.cfg
+
+== Server:
+
+client_role - Only clients with this role will have nrpe checks applied
+dir - base server configuration directory.
+log_dir - where the server logs.
+cache_dir - cached directory.
+docroot - DocumentRoot for webui.
+config_subdir - for dropping in configurations as needed.
+notifications_enabled - set to 1 to enable notification.
+check_external_commands
+default_contact_groups
+sysadmin_email - default notification email.
+sysadmin_sms_email - default notification sms.
+server_auth_method - authentication with the server can be done with openid (using apache2::mod_auth_openid), or htauth (basic). The default is openid, any other value will use htauth (basic).
+templates
+interval_length - minimum interval.
+default_host.check_interval
+default_host.retry_interval
+default_host.max_check_attempts
+default_host.notification_interval
+default_service.check_interval
+default_service.retry_interval
+default_service.max_check_attempts
+default_service.notification_interval
+
+= DATA BAGS:
+
+Create a `users` data bag that will contain the users that will be able to log into the Nagios webui. Each user can use htauth with a specified password, or an openid. Example user data bag item:
+
+    nagios[-<environment]: {
+      "id": "nagiosadmin",
+      "password": "unix hashed password",
+      "openid": "http://nagiosadmin.myopenid.com/",
+      "nagios": {
+        "pager": "nagiosadmin_pager@example.com",
+        "email": "nagiosadmin@example.com"
+      }
+    }
+You can specify users for different environments by adding a new set of attributes under nagios-<environment>
+
+When using server_auth_method 'openid', use the openid in the data bag item. Any other value for this attribute (e.g., "htauth", "htpasswd", etc) will use the htpasswd value as the password in `/etc/nagios3/htpasswd.users`.
+
+The openid must have the http:// and trailing /.
+
+= ROLES:
+
+Create a role to use for the monitoring server. The role name should match the value of the attribute "nagios[:server_role]". By default, this is 'monitoring'. For example:
+
+    % cat roles/monitoring.rb
+    name "monitoring"
+    description "Monitoring server"
+    run_list(
+      "recipe[nagios::server]"
+    )
+
+    default_attributes(
+      "nagios" => {
+        "server_auth_method" => "htauth"
+      }
+    )
+
+= USAGE:
+
+For a Nagios server, create a role that matches nagios[:server_role] , and add the following recipe to the run_list:
+
+    recipe[nagios::server]
+
+This will allow client nodes to search for the server by this role and add its IP address to the allowed list for NRPE.
+
+To install Nagios and NRPE on a client node create a role that matches nagios[:client_role] and add the following recipe to the run_list:
+
+    recipe[nagios::client]
+
+The server will by default add all of your nodes as hosts and monitor ping on them
+
+This is a fairly complicated cookbook. We'll describe the components in detail.
+
+== Definitions:
+
+nagios_conf:: This definition is used to drop in a configuration file in the base Nagios configuration directory's conf.d. This can be used for customized configurations for various services.
+
+== Libraries:
+
+default:: The library included with the cookbook provides some helper methods used in templates.
+
+* nagios_boolean
+* nagios_interval - calculates interval based on interval length and a given number of seconds.
+* nagios_attr - retrieves a nagios attribute from the node.
+
+== Recipes:
+
+=== Client
+
+The client recipe searches for allowed servers via a role named 'monitoring'. The recipe will also install the required packages and start the NRPE service. A custom plugin for checking memory is also added.
+
+Client commands for NRPE can be modified by editing the nrpe.cfg.erb template.
+
+=== Server
+
+The server recipe sets up Apache as the web front end. The nagios::client recipe is also included. This recipe also does a number of searches to dynamically build the hostgroups to monitor, hosts that belong to them and admins to notify of events/alerts.
+
+The recipe does the following:
+
+1. Searches for members through the 'users' data bag and adds them to a list for notification/contacts if they have the nagios attribute.
+2. Search all nodes.
+3. Search all available roles and build a list which will be the Nagios hostgroups.
+4. Search for all nodes of each role and add the hostnames to the hostgroups.
+5. Installs various packages required for the server.
+6. Sets up some configuration directories.
+7. Moves the package-installed Nagios configuration to a 'dist' directory.
+8. Disables the 000-default site (present on Debian/Ubuntu Apache2 package installations).
+9. Enables the Nagios web front end configuration and enables ssl.
+10. Sets up the configuration templates for services, contacts, hostgroups and hosts.
+
+*NOTE*: You will probably need to change the services.cfg.erb template for your environment.
+
+To add custom commands for service checks, these can be done on a per-role basis by editing the 'services.cfg.erb' template. This template has some pre-configured checks that use role names used in an example infrastructure. Here's a brief description:
+
+* monitoring - check_smtp (e.g., postfix relayhost) w/ NRPE and tcp port 514 (e.g., rsyslog)
+* load_balancer - check_nginx with NRPE.
+* appserver - check_unicorn with NRPE, e.g. a Rails application using Unicorn.
+* database_master - check_mysql_server with NRPE for a MySQL database master.
+
+= LICENSE and AUTHOR:
+
+Author:: Joshua Sierles <joshua@37signals.com>
+Author:: Nathan Haneysmith <nathan@opscode.com>
+Author:: Joshua Timberman <joshua@opscode.com>
+
+Copyright 2009, 37signals
+Copyright 2009-2010, Opscode, Inc
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

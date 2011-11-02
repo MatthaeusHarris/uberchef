@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# The command to search for
+cmd=$1
+
+if [ "${cmd}" == "" ]
+then
+  echo "Please specify a command to check"
+  exit 0
+fi
+
+# How many lines were returned from ps minus the header
+lines=$((`ps -C ${cmd} | wc -l` - 1))
+
+
+if [ ${lines} -eq 0 ]
+then
+  echo "${cmd} is not running"
+  exit 2
+else
+  echo "${cmd} is running"
+fi

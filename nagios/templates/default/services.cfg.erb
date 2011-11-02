@@ -4,7 +4,7 @@
 
 define service {
     use                 default-service
-    host_name           *
+    hostgroup_name      all
     service_description ping
     check_command       check_ping!200.0,20%!500.0,60%
 }
@@ -12,63 +12,63 @@ define service {
 # monitoring service checks
 define service {
     service_description Nagios
-    hostgroup_name      <%= node['nagios']['server_role'] %>
+    hostgroup_name      nagios_server
     check_command       check-nagios
     contact_groups      admins
     use                 default-service
 }
 
-# Uncomment if you're using Munin
-#define service {
-#    service_description Munin Client
-#    hostgroup_name      all
-#    check_command       check_tcp!4949
-#    use                 default-service
-#}
-
 # default checks for all hosts
 # Uncomment if you're running chef-client as a daemon
 #define service {
 #    service_description Chef Client
-#    hostgroup_name     base
-#    check_command      check_chef_client
-#    use                default-service
+#    hostgroup_name      base
+#    check_command    	  check_chef_client
+#    use                 default-service
 #}
-
+<% @services.each do |s,v| -%>
 define service {
-    service_description Free Space All Disks
-    hostgroup_name      all
-    check_command       check_all_disks
-    use                 default-service
+  host_name           <%= v['host_name'] %>
+  check_command       <%= v['check_command'] %>
+  service_description <%= v['service_description'] %>
+  use                 default-service
 }
+<% end -%>
 
-define service {
-    service_description Load Average
-    hostgroup_name      all
-    check_command       check_load
-    use                 default-service
-}
-
-define service {
-    service_description Free Memory
-    hostgroup_name      all
-    check_command       check_mem
-    use                 default-service
-}
-
-define service {
-    service_description SSH
-    hostgroup_name      all
-    check_command       check_ssh
-    use                 default-service
-}
-
-define service {
-    service_description Processes
-    hostgroup_name      all
-    check_command       check_local_procs
-    use                 default-service
-}
+#define service {
+#    service_description Free Space All Disks
+#    hostgroup_name      <%= node[:nagios][:client_role] %>
+#    check_command    		check_all_disks
+#    use                 default-service
+#}
+#
+#define service {
+#    service_description Load Average
+#    hostgroup_name      <%= node[:nagios][:client_role] %>
+#    check_command			  check_load
+#    use                 default-service
+#}
+#
+#define service {
+#    service_description Free Memory
+#    hostgroup_name      <%= node[:nagios][:client_role] %>
+#    check_command    		check_mem
+#    use                 default-service
+#}
+#
+#define service {
+#    service_description SSH
+#    hostgroup_name      <%= node[:nagios][:client_role] %>
+#    check_command       check_ssh
+#    use                 default-service
+#}
+#
+#define service {
+#    service_description Processes
+#    hostgroup_name      <%= node[:nagios][:client_role] %>
+#    check_command       check_local_procs
+#    use                 default-service
+#}
 
 <% unless @service_hosts['monitoring'].nil? -%>
 # If the monitoring host is a postfix relay, uncomment this.
@@ -119,10 +119,10 @@ define service {
 # basic check if the database_master role is a mysql server
 # database_master service checks
 define service {
-    service_description MySQL
-    hostgroup_name      database_master
-    check_command       check_nrpe!check_mysql_server
-    use                 default-service
+		service_description MySQL
+		hostgroup_name			database_master
+		check_command				check_nrpe!check_mysql_server
+		use									default-service
 }
 
 <% end -%>

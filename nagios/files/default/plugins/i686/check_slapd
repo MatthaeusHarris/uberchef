@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ $# -ne 3 ]
+then
+	echo "Usage: check_slapd <server> <bind user> <password>"
+	exit 0
+fi
+
+ldapsearch -x -w$3 -l 5 -h $1 -D "$2" -b "ou=people,dc=montana,dc=edu" "uid=last-update" cn > /dev/null
+exit_code=$?
+
+if [ ${exit_code} -eq 0 ]
+then
+	echo "OK - D2LAdmin Account Working"
+	exit 0
+elif [ ${exit_code} -eq 255 ]
+then
+	echo "slapd offline"
+	exit 2
+else
+	echo "D2L Account Offline - ldapsearch exit code ${exit_code}"
+	exit 2
+fi

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+checksnmp="/usr/local/nagios/libexec/check_snmp"
+
+hostname=$1
+oid=".1.3.6.1.4.1.4779.1.3.5.5.1.6.2.1"
+community="ACG-SYSADMIN"
+units="Amps"
+warn=$2
+crit=$3
+
+if [ $# -lt 3 ]
+then
+echo "Usage: check_baytech_current <hostname> <warning> <critical>"
+exit 0
+fi
+
+stat=`${checksnmp} -H ${hostname} -o ${oid} -C ${community} -u ${units} -w ${warn} -c ${crit}`
+
+current=`echo "$stat" | cut -d '=' -f 2 | sed 's/\([1-9]*[0-9]\)\([0-9]\) *$/\1.\2/'`
+
+exitcode=$?
+
+case $exitcode in
+	0)
+	echo "OK - $current $units"
+	;;
+	1)
+	echo "WARNING - $current $units"
+	;;
+	2)
+	echo "CRITICAL - $current $units"
+	;;
+esac
+
+exit $exitcode

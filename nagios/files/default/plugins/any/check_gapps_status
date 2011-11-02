@@ -1,0 +1,32 @@
+#!/usr/bin/python
+
+import feedparser
+import re
+import sys
+
+dashboardURL = "http://www.google.com/appsstatus/rss/en"
+icon = ''
+lastEntry = ''
+icon = ''
+
+dRSS = feedparser.parse( dashboardURL )
+if dRSS['entries'] != []:
+	lastEntry = dRSS['entries'][0]['summary_detail']['value']
+	m = re.match( '<p><i><img align="absmiddle" height="20" width="20" src="http:\/\/www.google.com\/appsstatus\/img\/(blue|yellow|red).gif" \/>&nbsp;([a-zA-Z0-9, :]+)<\/i><\/p>', lastEntry )
+	icon = m.group(1)
+else:
+	icon = 'blue'
+
+
+if icon == 'blue':
+	print "No Service Outages"
+	sys.exit( 0 )
+elif icon == 'yellow':
+	print "Service issues found. Check " + dashboardURL + " for more details"
+	sys.exit( 1 )
+elif icon == 'red':
+	print "Service outages exist. Check " + dashboardURL + " for more details"
+	sys.exit( 2 )
+else:
+	print "Script Error. Please Fix"
+	sys.exit( 1 )

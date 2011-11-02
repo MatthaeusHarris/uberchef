@@ -1,32 +1,34 @@
-define contact {
-  contact_name                    root
-  alias                           Root
-  service_notification_period     24x7
-  host_notification_period        24x7
-  service_notification_options    w,u,c,r
-  host_notification_options       d,r
-  service_notification_commands   service-notify-by-email
-  host_notification_commands      host-notify-by-email
-  email                           root@localhost
+define contact{
+        name                            generic-contact
+	host_notifications_enabled	0
+	service_notifications_enabled	0
+        service_notification_period     24x7
+        host_notification_period        24x7
+        service_notification_options    w,u,c,r,f,s
+        host_notification_options       d,u,r,f,s
+        service_notification_commands   service-notify-by-email
+        host_notification_commands      host-notify-by-email
+        register                        0
 }
 
 define contactgroup {
-  contactgroup_name admins
-  alias             Nagios Administrators
-  members           <%= @members.join(',') %>
+	contactgroup_name		admins
+	alias				Nagios Administrators
+	members				<%= @members.join(',') %>
 }
 
 define contactgroup {
-  contactgroup_name admins-sms
-  alias             Sysadmin SMS
-  members           <%= @members.join(',') %>
+	contactgroup_name		admins-sms
+	alias				Sysadmin SMS
+	members				<%= @members.join(',') %>
 }
 
 <% @admins.each do |a| -%>
 define contact {
-  use          default-contact
-  contact_name <%= a['id'] %>
-  email        <%= a['nagios']['email'] %>
+	use				generic-contact
+	contact_name			<%= a['id'] %>
+	email				<%= a['nagios']['email'] %>
+	pager				<%= a['nagios']['pager'] %>
 }
 
 <% end -%>

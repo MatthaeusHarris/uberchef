@@ -1,0 +1,57 @@
+#!/bin/bash
+
+if [ $# == 1 ]
+then
+	directory_servers=$1
+	check_type="single"
+else
+	check_type="all"
+fi
+
+#directory_server=(roster ds1 ds2 ds3 ds4 ds5)
+directory_server=(roster ds1 ds2 ds3 ds4 ds5 ds6)
+ldap_pass="@uth4@pps"
+last_update_user="last-update"
+attribute="modifyTimestamp"
+
+today=`date +%Y%m%d`
+
+if [ "$check_type" == "single" ]
+then
+	last_mod_date=`echo ${ldap_pass} | /opt/GoogleAccounts/ldapsearch.php -u ${last_update_user} -s ${directory_server} -a ${attribute} | grep ${attribute} | egrep -o "[0-9]{8}"`
+
+	if [ "${last_mod_date}" == "${today}" ]
+	then
+		echo "OK - Accounts are synced"
+		exit 0
+	else
+		echo "Critical - Accounts are not synced"
+		exit 2
+	fi
+else
+	correct_mod_date=`echo ${ldap_pass} | /opt/GoogleAccounts/ldapsearch.php -u ${last_update_user} -s roster.msu.montana.edu -a ${attribute} | grep ${attribute}`
+	failcount=0
+
+	for host in ${directory_server[@]}; do
+		last_mod_date=`echo ${ldap_pass} | /opt/GoogleAccounts/ldapsearch.php -u ${last_update_user} -s ${host} -a ${attribute} | grep ${attribute}`
+		if [ "${correct_mod_date}" != "${last_mod_date}" ]
+		then
+			echo "Critical - ${host} unsynced with last update of ${last_mod_date}"
+			(( failcount++ ))
+		fi
+	done
+
+	if [ ${failcount} -eq ${#directory_server[@]} ]
+	then
+		echo "Correct Date: ${correct_mod_date}"
+		exit 2
+	elif [ ${failcount} -gt 0 ]
+	then
+		echo "Correct Date: ${correct_mod_date}"
+		exit 1
+	else
+		echo "OK - Directory is Synced"
+		exit 0
+	fi
+
+fi

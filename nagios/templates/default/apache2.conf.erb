@@ -1,10 +1,22 @@
 <VirtualHost *:80>
-  ServerAdmin     <%= node['nagios']['sysadmin_email'] %>
+  RewriteEngine on
+  RewriteCond  %{HTTPS}  ^off$
+  RewriteCond  %{HTTP_HOST} (.*)
+  RewriteRule  ^(.*)/? https://%1/$1 [L,R]
+</VirtualHost>
+
+<VirtualHost *:443>
+  SSLEngine On
+  SSLCertificateFile /etc/apache2/ssl/server.crt
+  SSLCertificateKeyFile /etc/apache2/ssl/server.key
+  SSLCertificateChainFile /etc/apache2/ssl/gd_bundle.crt
+
+  ServerAdmin     <%= node[:nagios][:sysadmin_email] %>
   ServerName      <%= node[:fqdn] %>
-  ServerAlias     nagios nagios.<%= node.chef_environment =~ /^_default$/ ? "default" : node.chef_environment%>.<%= @public_domain %>
-  DocumentRoot    <%= node['nagios']['docroot'] %>
-  CustomLog       <%= node['nagios']['log_dir'] %>/apache_access.log combined
-  ErrorLog        <%= node['nagios']['log_dir'] %>/apache_error.log
+	ServerAlias     nagios nagios.<%= node[:app_environment]%>.<%= @public_domain %>
+  DocumentRoot    <%= node[:nagios][:docroot] %>
+  CustomLog       /var/log/nagios3/apache_access.log combined
+  ErrorLog        /var/log/nagios3/apache_error.log
 
   ScriptAlias /cgi-bin/nagios3 /usr/lib/cgi-bin/nagios3
   ScriptAlias /nagios3/cgi-bin /usr/lib/cgi-bin/nagios3
@@ -12,22 +24,20 @@
   Alias /nagios3/stylesheets /etc/nagios3/stylesheets
   Alias /nagios3 <%= node[:nagios][:docroot] %>
 
-<% case node['nagios']['server_auth_method'] -%>
+  <Location /cgi-bin/nagios3>
+<% case node[:nagios][:server_auth_method] -%>
 <% when "openid" -%>
-  <Location />
     AuthName "Nagios Server"
     AuthOpenIDEnabled On
     AuthOpenIDDBLocation /var/cache/apache2/mod_auth_openid.db
     AuthOpenIDUserProgram /usr/local/bin/mod_auth_openid.rb
-  </Location>
 <% else -%>
-  <Location />
     AuthName "Nagios Server"
     AuthType Basic
-    AuthUserFile "<%= node['nagios']['conf_dir'] %>/htpasswd.users"
+    AuthUserFile "<%= node[:nagios][:dir] %>/htpasswd.users"
     require valid-user
-  </Location>
 <% end -%>
+  </Location>
 
   RewriteEngine On
   RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*index\.html\ HTTP/

@@ -2,12 +2,11 @@
 # Author:: Joshua Sierles <joshua@37signals.com>
 # Author:: Joshua Timberman <joshua@opscode.com>
 # Author:: Nathan Haneysmith <nathan@opscode.com>
-# Author:: Seth Chisamore <schisamo@opscode.com>
 # Cookbook Name:: nagios
 # Recipe:: server
 #
 # Copyright 2009, 37signals
-# Copyright 2009-2011, Opscode, Inc
+# Copyright 2009-2010, Opscode, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,18 +25,53 @@ include_recipe "apache2::mod_ssl"
 include_recipe "apache2::mod_rewrite"
 include_recipe "nagios::client"
 
-sysadmins = search(:users, 'groups:sysadmin')
-nodes = search(:node, "hostname:[* TO *] AND chef_environment:#{node.chef_environment}")
+# Default to production
+env = 'nagios'
+environment = 'Production'
+if node.chef_environment == 'Development' || node.chef_environment.nil?
+	env = 'nagios-dev'
+        environment = 'Development'
+end
+Chef::Log.debug( "Nagios environment(Node:#{node.chef_environment} Used:#{environment}) string used: #{env}" )
+users = search(:users, "#{env}:*")
 
-if nodes.empty?
-  Chef::Log.info("No nodes returned from search, using this node so hosts.cfg has data")
-  nodes = Array.new
-  nodes << node
+all_nodes = search(:node, "hostname:* AND chef_environment:#{environment}")
+snmp_nodes = search( :bare_node, "nagios:* AND chef_environment:#{environment}" )
+all_nodes = all_nodes | snmp_nodes
+nodes = Array.new
+
+# Will hold the members that will become contacts
+members = Array.new
+sysadmins = Array.new
+
+# Get rid of entries with blank pager & email
+# I can't seem to get the search above to just include non empty values so
+# a loop it is
+users.each do |s|
+  if not s[env]['email'].empty? and not s[env]['pager'].empty?
+    Chef::Log.debug( "Adding user #{s['id']} Email: #{s[env]['email']} Pager: #{s[env]['pager']}" )
+    sysadmins << s
+    members << s['id']
+  end
 end
 
-members = Array.new
-sysadmins.each do |s|
-  members << s['id']
+if all_nodes.empty?
+  Chef::Log.debug("No nodes returned from search, using this node so hosts.cfg has data")
+  nodes << node
+else
+ # Get rid of duplicate names
+  all_nodes.each do |a|
+    can_add = true
+    nodes.each do |n|
+      if a['hostname'] == n['hostname']
+        can_add = false
+      end
+    end
+    if can_add and not a['hostname'].nil?
+      Chef::Log.debug( "Adding #{a['hostname']} to nodes to be monitored" )
+      nodes << a
+    end
+  end
 end
 
 role_list = Array.new
@@ -49,59 +83,60 @@ search(:role, "*:*") do |r|
   end
 end
 
-if node['public_domain']
-  public_domain = node['public_domain']
+if node[:public_domain]
+  public_domain = node[:public_domain]
 else
-  public_domain = node['domain']
+  public_domain = node[:domain]
 end
 
-include_recipe "nagios::server_#{node['nagios']['server']['install_method']}"
+%w{ nagios3 nagios-nrpe-plugin nagios-images }.each do |pkg|
+  package pkg
+end
 
-service "nagios" do
-  service_name node['nagios']['server']['service_name']
+service "nagios3" do
   supports :status => true, :restart => true, :reload => true
-  action [ :enable, :start ]
+  action [ :enable ]
 end
 
 nagios_conf "nagios" do
   config_subdir false
 end
 
-directory "#{node['nagios']['conf_dir']}/dist" do
-  owner node['nagios']['user']
-  group node['nagios']['group']
+directory "#{node[:nagios][:dir]}/dist" do
+  owner "nagios"
+  group "nagios"
   mode "0755"
 end
 
-directory node['nagios']['state_dir'] do
-  owner node['nagios']['user']
-  group node['nagios']['group']
+directory node[:nagios][:state_dir] do
+  owner "nagios"
+  group "nagios"
   mode "0751"
 end
 
-directory "#{node['nagios']['state_dir']}/rw" do
-  owner node['nagios']['user']
-  group node['apache']['user']
+directory "#{node[:nagios][:state_dir]}/rw" do
+  owner "nagios"
+  group node[:apache][:user]
   mode "2710"
 end
 
-execute "archive-default-nagios-object-definitions" do
-  command "mv #{node['nagios']['config_dir']}/*_nagios*.cfg #{node['nagios']['conf_dir']}/dist"
-  not_if { Dir.glob("#{node['nagios']['config_dir']}/*_nagios*.cfg").empty? }
+execute "archive default nagios object definitions" do
+  command "mv #{node[:nagios][:dir]}/conf.d/*_nagios*.cfg #{node[:nagios][:dir]}/dist"
+  not_if { Dir.glob(node[:nagios][:dir] + "/conf.d/*_nagios*.cfg").empty? }
 end
 
-file "#{node['apache']['dir']}/conf.d/nagios3.conf" do
+file "#{node[:apache][:dir]}/conf.d/nagios3.conf" do
   action :delete
 end
 
-case node['nagios']['server_auth_method']
+case node[:nagios][:server_auth_method]
 when "openid"
   include_recipe "apache2::mod_auth_openid"
 else
-  template "#{node['nagios']['conf_dir']}/htpasswd.users" do
+  template "#{node[:nagios][:dir]}/htpasswd.users" do
     source "htpasswd.users.erb"
-    owner node['nagios']['user']
-    group node['apache']['user']
+    owner "nagios"
+    group node[:apache][:user]
     mode 0640
     variables(
       :sysadmins => sysadmins
@@ -113,12 +148,21 @@ apache_site "000-default" do
   enable false
 end
 
-template "#{node['apache']['dir']}/sites-available/nagios3.conf" do
+remote_directory "#{node[:apache][:dir]}/ssl" do
+  source "ssl"
+  owner "root"
+  group "root"
+  mode "0755"
+  action :create
+  files_mode "0755"
+end
+
+template "#{node[:apache][:dir]}/sites-available/nagios3.conf" do
   source "apache2.conf.erb"
   mode 0644
   variables :public_domain => public_domain
-  if ::File.symlink?("#{node['apache']['dir']}/sites-enabled/nagios3.conf")
-    notifies :reload, "service[apache2]"
+  if ::File.symlink?("#{node[:apache][:dir]}/sites-enabled/nagios3.conf")
+    notifies :reload, resources(:service => "apache2")
   end
 end
 
@@ -130,12 +174,37 @@ apache_site "nagios3.conf"
   end
 end
 
-%w{ commands templates timeperiods}.each do |conf|
+%w{ templates timeperiods}.each do |conf|
   nagios_conf conf
 end
 
+hosts = search( :node, "nagios:checks AND chef_environment:#{node.chef_environment}" )
+shosts = hosts | snmp_nodes
+
+services = Hash.new
+shosts.each do |h|
+    Chef::Log.debug( "Host #{h['hostname']} has the following services:" )
+    h['nagios']['checks'].each do |s,v|
+      if not v.empty? and not v.nil?
+        Chef::Log.debug( s )
+        if services[s].nil?
+          services[s] = v
+        end
+        if services[s]['host_name'].nil?
+          services[s]['host_name'] = "#{h['hostname']}"
+        else
+          services[s]['host_name'] << ",#{h['hostname']}"
+        end
+      end
+    end
+end
+
 nagios_conf "services" do
-  variables :service_hosts => service_hosts
+  variables :service_hosts => service_hosts, :services => services
+end
+
+nagios_conf "commands" do
+  variables :commands => services
 end
 
 nagios_conf "contacts" do

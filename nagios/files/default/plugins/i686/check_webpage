@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [ -z $1 ]
+then
+	echo "Usage: check_webpage <url>"
+	exit 1
+fi
+
+site=$1
+
+output=`curl -k -I $site 2>&1 | egrep 'HTTP\/...' | sed 's/^HTTP\/....\([0-9][0-9][0-9]\) \(.*\)/\1,\2/g'`
+
+if [ -z "$output" ]
+then
+	echo "Site is down - Host unreachable"
+	exit 2
+else
+	status_code=`echo $output | cut -d ',' -f1`
+	status_msg=`echo $output | cut -d ',' -f2`
+
+	echo "Return Code: ${status_code} - ${status_msg}"
+	status=`echo "$status_code" | egrep -q "200|302|401"`
+	if [ $? -eq 0 ]
+	then
+		exit 0
+	else
+		exit 2
+	fi
+fi

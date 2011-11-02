@@ -1,0 +1,37 @@
+#!/bin/bash
+
+backup_location="/backup"
+current_date=`date +%Y%m%d`
+return_flag=0
+status_msg=""
+
+full_backup_path="${backup_location}/${current_date}/${current_date}_full.sql"
+
+#echo "Checking for ${full_backup_path}"
+if [ ! -f ${full_backup_path} ]
+then
+	return_flag=2
+	status_msg="CRITICAL - Full backup missing - ${full_backup_path}"
+fi
+
+binary_index_path="${backup_location}/${current_date}/mysql-bin.index"
+
+#echo "Checking for ${binary_index_path}"
+if [ ! -f ${binary_index_path} ]
+then
+	return_flag=2
+	if [ -z "$status_msg" ]
+	then
+		status_msg="CRITICAL - Binary Index missing - ${binary_index_path}"
+	else
+		status_msg="CRITICAL - Binary Index and full backup missing - ${binary_index_path}"
+	fi
+fi
+
+if [ -z "$status_msg" ]
+then
+	status_msg="OK - Backup in place"
+fi
+
+echo $status_msg
+exit $return_flag
