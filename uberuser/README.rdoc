@@ -7,7 +7,7 @@ groups:  contains the group information
 users:  contains the user information, including ssh-key information.
 
 Example user data bag:
-{
+  {
     "groups": "sysadmin",
     "comment": "Matt Harris",
     "ssh-keys": [
