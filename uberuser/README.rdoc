@@ -6,6 +6,24 @@ The data bags are as follows:
 groups:  contains the group information
 users:  contains the user information, including ssh-key information.
 
+Example user data bag:
+{
+    "groups": "sysadmin",
+    "comment": "Matt Harris",
+    "ssh-keys": [
+      "ssh-dss AAAAB3NzaC1kc3MAAACBAK+yHSSoEW9PS/NTzIRkCKLnDsnieL+nmW1i1xv0IWAPqx6+YQ4H40EXWdxpUkodZc3ybMuxCBkeJZfhk6cCVqlZE9LLAdXQnTrP0KvsgHMIfmKqks+/3FneTGwyjLmQUVM868g1u3j9e1VyCNRz31OiJvxYqfj/f8n9If2M7btNAAAAFQCM9ojptcK0tb8YooOFPg+yaUd9bQAAAIA6ic3oNtmD+e9srvM3U2kjnfMIUjoEPMf/ioukBbuwQUm5uib4h2MqgKl8jtA3iXlE3f14k3kdSQqqHqL8ftGOY60fVDgSjn3MBwrTnhK3CB78dtUxkXZYOrreThlCuElwKbXAH4ySVCy30a3dnSgY0fmVja5HHT1kt0Ix+JqgPQAAAIATYNJIEl1d5pkIY2YJf/O/R54VF6sbt3LvO5LrqDEswPilV9b9Ny/2xBgUipTyA9thPxi/L+deFNa7MU42yKjhXNyh+UU1DVB3ME3/SNiUrwtYamUEE78D/lU0Ftev1d75rJWJMs9jVz/lJ/LsfTy14seh9amCgL/QfFRGeko62g== matt"
+    ],
+    "nagios": {
+      "email": "matthaeus.harris@gmail.com"
+    },
+    "id": "matt",
+    "uid": 2001,
+    "shell": "/bin/bash",
+    "password": "$6$EMhuiES.$xQMv4XyXztgKJabDgpZjvF9Ya17TgY92vAGqoJ1GXn6naMLnKmanquuXKNXRXZZNCJai.wgq9QClYCCk2T5GI1"
+  }
+
+The "home" and "group" attributes are given sane defaults.  
+
 = REQUIREMENTS:
 
 = ATTRIBUTES:
