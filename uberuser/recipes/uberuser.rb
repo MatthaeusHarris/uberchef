@@ -39,8 +39,17 @@ end
 
 node[:groups].each do |groupname|
   local_group = data_bag_item(node[:uberuser][:groupdatabag],groupname)
+  local_group_members = Array.new()
+  local_group["users"].each do |user|
+    local_user = data_bag_item(node[:uberuser][:userdatabag],user)
+    if local_user["username"]
+      local_group_members << local_user["username"]
+    else
+      local_group_members << user
+    end
+  end
   group groupname do
     gid       local_group["gid"]
-    members   local_group["users"]
+    members   local_group_members
   end
 end
