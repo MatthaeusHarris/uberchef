@@ -9,70 +9,48 @@
 
 require "pp"
 
-package "ntp"
-package "libshadow-ruby1.8"
-package "pv"
-package "curl"
-package "git-core"
-package "vim"
-package "acpid"
+#development data dumping
+pp node[:uberuser][:userdatabag]
+pp node[:uberuser][:groupdatabag]
 
-# Load the admin group onto all machines regardless of local configuration
-admins = data_bag_item(node[:uberuser][:groupdatabag],"admin")
-adminlist = []
-#pp admins
-admins['users'].each do |username|
-  rcg_user username
-  useritem = data_bag_item(node[:uberuser][:userdatabag],username)
-  systemusername = useritem["username"]
-  systemusername = username unless systemusername
-  adminlist.push(systemusername)
+pp node[:users]
+pp node[:groups]
+pp node[:load_group_users]
+
+#keep a local array for all the users we're going to collect
+local_users = Array.new()
+
+#populate it with all the explicitly listed users
+node[:users].each do |user|
+  local_users << user
 end
 
-group "admin" do
-  members   adminlist
+
+#populate it with the implicitly listed users
+node[:load_group_users].each do |groupname| 
+  local_group = data_bag_item(node[:uberuser][:groupdatabag],groupname)
+  local_group["users"].each do |user|
+    local_users << user
+  end
 end
 
-#@local_users = []
-#begin
-#  node[:users].each do |role_user|
-#    @local_users << role_user
-#  end
-#  node[:localusers].each do |local_user|
-#    @local_users << local_user
-#  end
-#rescue => err
-#  puts err
-#end
+local_users.each do |user|
+  rcg_user user
+end
 
-#puts "pp'ing local users:"
-#pp @local_users
-
-#@local_users.each do |local_user|
-#  rcg_user local_user
-#end
-
-#@local_groups = []
-#begin
-#  node[:groups].each do |role_group|
-#    @local_groups << role_group
-#  end
-#  node[:localgroups].each do |local_group|
-#    @local_groups << local_group
-#  end
-#rescue => err
-#  puts err
-#end
-
-#@local_groups.each do |local_group|
-#  g = data_bag_item("groups",local_group)
-#  group g['id'] do 
-#    gid       g['gid']
-#    members   g['users']
-#  end
-#end
-
-#@role_users = []
-#begin
-#  pp node[:role_users]
-#end
+node[:groups].each do |groupname|
+  local_group = data_bag_item(node[:uberuser][:groupdatabag],groupname)
+  local_group_members = Array.new()
+  local_group["users"].each do |user|
+    local_user = data_bag_item(node[:uberuser][:userdatabag],user)
+    if local_user["username"]
+      local_group_members << local_user["username"]
+    else
+      local_group_members << user
+    end
+  end
+  group groupname do
+    gid       local_group["gid"]
+    members   local_group_members
+  end
+end
