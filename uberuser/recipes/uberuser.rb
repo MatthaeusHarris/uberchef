@@ -25,6 +25,7 @@ node[:users].each do |user|
   local_users << user
 end
 
+
 #populate it with the implicitly listed users
 node[:load_group_users].each do |groupname| 
   local_group = data_bag_item(node[:uberuser][:groupdatabag],groupname)
