@@ -3,7 +3,7 @@ Creates and configures a virtualhost with the OpsCode Apache2 web_app provider.
 = REQUIREMENTS:
 OpsCode apache2 cookbook
 = ATTRIBUTES:
-"virtualhosts": {
+ "virtualhosts": {
 	"example.com": {
 		"server_name": "example.com",
 		"docroot": "/var/www/example.com",
@@ -12,6 +12,6 @@ OpsCode apache2 cookbook
 		],
 		"application_name": "example"
 	}
-}
+ }
 = USAGE:
 Add the above json to your node's normal attribute, then include the webhost recipe.
