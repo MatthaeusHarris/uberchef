@@ -18,12 +18,12 @@ package "vim"
 package "acpid"
 
 # Load the admin group onto all machines regardless of local configuration
-admins = data_bag_item("groups","admin")
+admins = data_bag_item(node[:uberuser][:groupdatabag],"admin")
 adminlist = []
 #pp admins
 admins['users'].each do |username|
   rcg_user username
-  useritem = data_bag_item("users",username)
+  useritem = data_bag_item(node[:uberuser][:userdatabag],username)
   systemusername = useritem["username"]
   systemusername = username unless systemusername
   adminlist.push(systemusername)
