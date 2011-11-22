@@ -44,6 +44,6 @@ script "unpack_postfixadmin" do
   user "root"
   cwd node["postfixadmin"]["webroot"]
   code <<-EOH
-  tar -zxvf --strip-component=1 /tmp/postfixadmin-#{node["postfixadmin"]["version"]}.tgz
+  tar -zxvf /tmp/postfixadmin-#{node["postfixadmin"]["version"]}.tgz --strip-component=1 
   EOH
 end
