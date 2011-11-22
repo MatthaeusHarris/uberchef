@@ -31,10 +31,5 @@ require "pp"
 end
 
 remote_file "/tmp/postfixadmin-#{node["postfixadmin"]["version"]}.deb" do
-  source node["postfixadmin"]["url"]["ubuntu"]
+  source node["postfixadmin"]["url"]
 end
-
-dpkg_package "postfixadmin" do
-  source  "/tmp/postfixadmin-#{node["postfixadmin"]["version"]}.deb"
-end
-  
