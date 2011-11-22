@@ -9,8 +9,8 @@
 
 require "pp"
 
-%w{"postfix php5"}.do |p| {
+%w{"postfix php5"}.each do |p|
   package p
-}
+done
 
 
