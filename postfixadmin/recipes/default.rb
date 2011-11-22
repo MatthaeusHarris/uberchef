@@ -2,7 +2,15 @@
 # Cookbook Name:: postfixadmin
 # Recipe:: default
 #
-# Copyright 2011, YOUR_COMPANY_NAME
+# Copyright 2011, Matthew Harris
 #
-# All rights reserved - Do Not Redistribute
+# All rights reserved
 #
+
+require "pp"
+
+%w{"postfix php5"}.do |p| {
+  package p
+}
+
+
