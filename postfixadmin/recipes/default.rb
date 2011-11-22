@@ -11,6 +11,6 @@ require "pp"
 
 %w{"postfix php5"}.each do |p|
   package p
-done
+end
 
 
