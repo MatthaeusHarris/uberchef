@@ -14,6 +14,11 @@ require "pp"
   postfix-mysql 
   postgrey
   php5 
+  php5-mysql
+  php5-pgsql
+  php5-imap
+  dbconfig-common
+  wwwconfig-common
   courier-base 
   courier-ssl 
   courier-authdaemon 
