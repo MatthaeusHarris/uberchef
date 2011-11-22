@@ -33,3 +33,7 @@ end
 remote_file "/tmp/postfixadmin-#{node["postfixadmin"]["version"]}.tgz" do
   source node["postfixadmin"]["url"]
 end
+
+directory node["postfixadmin"]["webroot"] do
+  recursive   true
+end
