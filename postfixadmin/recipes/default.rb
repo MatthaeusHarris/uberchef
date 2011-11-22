@@ -37,3 +37,13 @@ end
 directory node["postfixadmin"]["webroot"] do
   recursive   true
 end
+
+script "unpack_postfixadmin" do
+  not_if "test -f /var/www/postfixadmin/index.php"
+  interpreter "bash"
+  user "root"
+  cwd node["postfixadmin"]["webroot"]
+  code <<-EOH
+  tar -zxvf /tmp/postfixadmin-#{node["postfixadmin"]["version"]}.tgz
+  EOH
+end
