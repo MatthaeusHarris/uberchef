@@ -9,7 +9,19 @@
 
 require "pp"
 
-%w{postfix php5}.each do |p|
+%w{
+  postfix 
+  postfix-mysql 
+  postgrey
+  php5 
+  courier-base 
+  courier-ssl 
+  courier-authdaemon 
+  courier-authlib 
+  courier-authlib-mysql 
+  courier-imap 
+  courier-imap-ssl
+  }.each do |p|
   package p
 end
 
