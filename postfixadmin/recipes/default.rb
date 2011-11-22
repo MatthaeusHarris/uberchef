@@ -30,6 +30,6 @@ require "pp"
   package p
 end
 
-remote_file "/tmp/postfixadmin-#{node["postfixadmin"]["version"]}.deb" do
+remote_file "/tmp/postfixadmin-#{node["postfixadmin"]["version"]}.tgz" do
   source node["postfixadmin"]["url"]
 end
