@@ -27,5 +27,9 @@ end
 
 remote_file "/tmp/postfixadmin-#{node["postfixadmin"]["version"]}.deb" do
   source node["postfixadmin"]["url"]["ubuntu"]
-  
 end
+
+package "postfixadmin" do
+  source  "/tmp/postfixadmin-#{node["postfixadmin"]["version"]}.deb"
+end
+  
