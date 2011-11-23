@@ -84,6 +84,15 @@ script "config_postfixadmin" do
   user "root"
   cwd node["postfixadmin"]["webroot"]
   code <<-EOH
-  cat config.inc.php | sed "s/\['configured'\] = false/\['configured'\] = true/g" | grep configured
+  cat config.inc.php | \
+  sed "s/\\['configured'\\] = false/\\['configured'\\] = true/g" | \
+  sed "s/\\['database_host'\\] = .*^/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" \
+  > config.inc.php.new
   EOH
+#  $CONF['database_type'] = 'mysql';
+#  $CONF['database_host'] = 'localhost';
+#  $CONF['database_user'] = 'postfix';
+#  $CONF['database_password'] = 'postfixadmin';
+#  $CONF['database_name'] = 'postfix';
+  
 end
