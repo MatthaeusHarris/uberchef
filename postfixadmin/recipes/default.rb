@@ -83,6 +83,6 @@ script "config_postfixadmin" do
   interpreter "bash"
   user "root"
   code <<-EOH
-  cat config.inc.php | sed "s/\['configured'\] = false/\['configured'\] = true/g" > config.inc.php.new
+  cat config.inc.php | sed "s/\['configured'\] = false/\['configured'\] = true/g" | grep configured
   EOH
 end
