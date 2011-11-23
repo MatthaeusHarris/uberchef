@@ -87,10 +87,10 @@ script "config_postfixadmin" do
   code <<-EOH
   cat config.inc.php | \
   sed "s/\\['configured'\\] = false/\\['configured'\\] = true/g" | \
-  sed "s/\\['database_host'\\] = '.\*'/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" \
-  sed "s/\\['database_user'\\] = '.\*'/\\['database_user'\\] = '#{node["postfixadmin"]["database"]["user"]}'/g" \
-  sed "s/\\['database_name'\\] = '.\*'/\\['database_name'\\] = '#{node["postfixadmin"]["database"]["name"]}'/g" \
-  sed "s/\\['database_name'\\] = '.\*'/\\['database_password'\\] = '#{node["postfixadmin"]["database"]["password"]}'/g" \
+  sed "s/\\['database_host'\\] = '.\*'/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" | \
+  sed "s/\\['database_user'\\] = '.\*'/\\['database_user'\\] = '#{node["postfixadmin"]["database"]["user"]}'/g" | \
+  sed "s/\\['database_name'\\] = '.\*'/\\['database_name'\\] = '#{node["postfixadmin"]["database"]["name"]}'/g" | \
+  sed "s/\\['database_name'\\] = '.\*'/\\['database_password'\\] = '#{node["postfixadmin"]["database"]["password"]}'/g" | \
   > config.inc.php.new
   EOH
 #  $CONF['database_user'] = 'postfix';
