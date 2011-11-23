@@ -90,7 +90,7 @@ script "config_postfixadmin" do
   | sed "s/\\['configured'\\] = false/\\['configured'\\] = true/g"\
   | sed "s/\\['database_host'\\] = '.\*'/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" \
   | sed "s/\\['database_user'\\] = '.\*'/\\['database_user'\\] = '#{node["postfixadmin"]["database"]["user"]}'/g" \
-  | sed "s/\\['database_name'\\] = '.\*'/\\['database_name'\\] = '#{node["postfixadmin"]["database"]["name"]}'/g" \
+  | sed "s/\\['database_name'\\] = '.\*'/\\['database_name'\\] = '#{node["postfixadmin"]["database"]["database"]}'/g" \
   | sed "s/\\['database_name'\\] = '.\*'/\\['database_password'\\] = '#{node["postfixadmin"]["database"]["password"]}'/g" \
   > config.inc.php.new
   mv config.inc.php config.inc.php.`date +%Y%m%d-%H%M%S`
