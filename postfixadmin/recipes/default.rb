@@ -70,6 +70,7 @@ mysql -uroot -h #{mysql_server_fqdn} -p#{mysql_server_root_password} mysql -e 'g
 mysql -u#{node["postfixadmin"]["database"]["user"]} -p#{node["postfixadmin"]["database"]["password"]} -h #{mysql_server_fqdn} #{node["postfixadmin"]["database"]["database"]} -e 'show tables;'
 EOH
 pp database_code
+
 script "create_database" do
   not_if "mysql -u#{node["postfixadmin"]["database"]["user"]} -p#{node["postfixadmin"]["database"]["password"]} -h #{mysql_server_fqdn} #{node["postfixadmin"]["database"]["database"]} -e 'show tables;'"
   interpreter "bash"
@@ -86,11 +87,12 @@ script "config_postfixadmin" do
   code <<-EOH
   cat config.inc.php | \
   sed "s/\\['configured'\\] = false/\\['configured'\\] = true/g" | \
-  sed "s/\\['database_host'\\] = .*^/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" \
+  sed "s/\\['database_host'\\] = '.\*'/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" \
+  sed "s/\\['database_user'\\] = '.\*'/\\['database_user'\\] = '#{node["postfixadmin"]["database"]["user"]}'/g" \
+  sed "s/\\['database_name'\\] = '.\*'/\\['database_name'\\] = '#{node["postfixadmin"]["database"]["name"]}'/g" \
+  sed "s/\\['database_name'\\] = '.\*'/\\['database_password'\\] = '#{node["postfixadmin"]["database"]["password"]}'/g" \
   > config.inc.php.new
   EOH
-#  $CONF['database_type'] = 'mysql';
-#  $CONF['database_host'] = 'localhost';
 #  $CONF['database_user'] = 'postfix';
 #  $CONF['database_password'] = 'postfixadmin';
 #  $CONF['database_name'] = 'postfix';
