@@ -90,11 +90,9 @@ cat config.inc.php \
 > config.inc.php.new
 mv config.inc.php config.inc.php.`date +%Y%m%d-%H%M%S`
 mv config.inc.php.new config.inc.php
-
 EOH
-#| sed "s/\\['setup_password'\\]" = '.\*'/\\['setup_password'\\] = '#{node["postfixadmin"]["admin"]["password"]}'/g" \
 pp config_code
-pp node["postfixadmin"]["admin"]["password"]
+
 script "config_postfixadmin" do
 #  not_if "test -f #{node["postfixadmin"]["webroot"]}/config.inc.php.new"
   not_if "grep '\[\'configured\'\] = false' #{node["postfixadmin"]["webroot"]}/config.inc.php"
