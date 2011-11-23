@@ -81,6 +81,7 @@ end
 
 script "config_postfixadmin" do
 #  not_if "test -f #{node["postfixadmin"]["webroot"]}/config.inc.php.new"
+  not_if "grep '\[\'configured\'\] = false' #{node["postfixadmin"]["webroot"]}/config.inc.php"
   interpreter "bash"
   user "root"
   cwd node["postfixadmin"]["webroot"]
@@ -92,6 +93,8 @@ script "config_postfixadmin" do
   | sed "s/\\['database_name'\\] = '.\*'/\\['database_name'\\] = '#{node["postfixadmin"]["database"]["name"]}'/g" \
   | sed "s/\\['database_name'\\] = '.\*'/\\['database_password'\\] = '#{node["postfixadmin"]["database"]["password"]}'/g" \
   > config.inc.php.new
+  mv config.inc.php config.inc.php.`date +%Y%m%d-%H%M%S`
+  mv config.inc.php.new config.inc.php
   EOH
 #  $CONF['database_user'] = 'postfix';
 #  $CONF['database_password'] = 'postfixadmin';
