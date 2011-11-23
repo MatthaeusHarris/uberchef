@@ -82,6 +82,7 @@ script "config_postfixadmin" do
 #  not_if "test -f #{node["postfixadmin"]["webroot"]}/config.inc.php.new"
   interpreter "bash"
   user "root"
+  cwd node["postfixadmin"]["webroot"]
   code <<-EOH
   cat config.inc.php | sed "s/\['configured'\] = false/\['configured'\] = true/g" | grep configured
   EOH
