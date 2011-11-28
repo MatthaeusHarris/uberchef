@@ -21,7 +21,7 @@ define :rcg_user do
   directory useritem["home"] do
     owner   useritem["username"]
     group   useritem["gid"].to_s
-    mode    "0700"
+    mode    "0755"
   end
   
   directory useritem["home"] + "/.ssh" do
