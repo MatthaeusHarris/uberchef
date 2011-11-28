@@ -70,6 +70,7 @@ mysql -uroot -h #{mysql_server_fqdn} -p#{mysql_server_root_password} mysql -e 'g
 mysql -u#{node["postfixadmin"]["database"]["user"]} -p#{node["postfixadmin"]["database"]["password"]} -h #{mysql_server_fqdn} #{node["postfixadmin"]["database"]["database"]} -e 'show tables;'
 EOH
 pp database_code
+
 script "create_database" do
   not_if "mysql -u#{node["postfixadmin"]["database"]["user"]} -p#{node["postfixadmin"]["database"]["password"]} -h #{mysql_server_fqdn} #{node["postfixadmin"]["database"]["database"]} -e 'show tables;'"
   interpreter "bash"
@@ -78,21 +79,25 @@ script "create_database" do
   cwd node["postfixadmin"]["webroot"]
 end
 
+config_code = <<-EOH
+cat config.inc.php \
+| sed "s/\\['configured'\\] = false/\\['configured'\\] = true/g" \
+| sed "s/\\['database_host'\\] = '.\*'/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" \
+| sed "s/\\['database_user'\\] = '.\*'/\\['database_user'\\] = '#{node["postfixadmin"]["database"]["user"]}'/g" \
+| sed "s/\\['database_name'\\] = '.\*'/\\['database_name'\\] = '#{node["postfixadmin"]["database"]["database"]}'/g" \
+| sed "s/\\['database_password'\\] = '.\*'/\\['database_password'\\] = '#{node["postfixadmin"]["database"]["password"]}'/g"  \
+| sed "s/\\['setup_password'\\] = '.\*'/\\['setup_password'\\] = '#{node["postfixadmin"]["admin"]["password"]}'/g" \
+> config.inc.php.new
+mv config.inc.php config.inc.php.`date +%Y%m%d-%H%M%S`
+mv config.inc.php.new config.inc.php
+EOH
+pp config_code
+
 script "config_postfixadmin" do
 #  not_if "test -f #{node["postfixadmin"]["webroot"]}/config.inc.php.new"
+  not_if "grep '\[\'configured\'\] = false' #{node["postfixadmin"]["webroot"]}/config.inc.php"
   interpreter "bash"
   user "root"
   cwd node["postfixadmin"]["webroot"]
-  code <<-EOH
-  cat config.inc.php | \
-  sed "s/\\['configured'\\] = false/\\['configured'\\] = true/g" | \
-  sed "s/\\['database_host'\\] = .*^/\\['database_host'\\] = '#{mysql_server_fqdn}'/g" \
-  > config.inc.php.new
-  EOH
-#  $CONF['database_type'] = 'mysql';
-#  $CONF['database_host'] = 'localhost';
-#  $CONF['database_user'] = 'postfix';
-#  $CONF['database_password'] = 'postfixadmin';
-#  $CONF['database_name'] = 'postfix';
-  
+  code config_code
 end

@@ -14,5 +14,6 @@ default["postfixadmin"]["webroot"] = "/var/www/postfixadmin"
 default["postfixadmin"]["database"]["host"] = "mysql"
 default["postfixadmin"]["database"]["database"] = "postfixadmin"
 default["postfixadmin"]["database"]["user"] = "postfixadmin"
+default["postfixadmin"]["admin"]["password"] = "changeme"
 
 
