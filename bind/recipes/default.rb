@@ -24,7 +24,7 @@ all_nodes.each do |node|
   end
 end
 
-#pp records
+pp records
 
 data_bag("dns").each do |domain|
   domain_data = data_bag_item("dns",domain)
