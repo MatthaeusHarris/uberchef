@@ -22,6 +22,10 @@ If you prefer to use passwordless sudo just set the following attribute to true:
 
     node['authorization']['sudo']['passwordless']
 
+If you prefer to add lines individually, add lines to the following attribute:
+
+	node['authorization']['sudo']['append']
+
 USAGE
 =====
 
@@ -48,7 +52,8 @@ In JSON (role.json or on the node object):
           "jerry",
           "greg"
         ],
-        "passwordless": true
+        "passwordless": true,
+		"append": "backup  ALL=(ALL) NOPASSWD: /bin/true"
       }
     }
 

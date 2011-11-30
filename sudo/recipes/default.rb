@@ -30,5 +30,6 @@ template "/etc/sudoers" do
     :sudoers_groups => node['authorization']['sudo']['groups'],
     :sudoers_users => node['authorization']['sudo']['users'],
     :passwordless => node['authorization']['sudo']['passwordless']
+    :append => node['authorization']['sudo']['append']
   )
 end
