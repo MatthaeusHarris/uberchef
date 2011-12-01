@@ -52,7 +52,7 @@ data_bag("dns").each do |domain|
     owner "root"
     mode 0644
     variables(
-      :domain => "rcg.montana.edu",
+      :domain => domain_data["zone"],
       :ttl => domain_data["options"]["ttl"],
       :serial => Time.now().tv_sec,
       :refresh => domain_data["options"]["refresh"],
