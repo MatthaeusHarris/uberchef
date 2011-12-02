@@ -20,7 +20,7 @@ zones = Array.new()
 all_nodes = search(:node, "*:*")
 all_nodes.each do |node|
   if !node["ipaddress"].nil?
-    records[node.name] = {"name" => node.name, "type" => "IN A", "info" => node.ipaddress}
+    records[node.name + "IN A"] = {"name" => node.name, "type" => "IN A", "info" => node.ipaddress}
   end
 end
 
@@ -36,7 +36,7 @@ data_bag("dns").each do |domain|
    
   end
   domain_data["records"].each do |record|
-    local_records[record["name"]] = record
+    local_records[record["name"] + record["type"]] = record
   end
   local_records.each do |key,value|
     begin
