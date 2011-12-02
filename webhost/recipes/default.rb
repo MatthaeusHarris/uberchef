@@ -19,4 +19,8 @@ node[:virtualhosts].each do |servname, virthost|
     docroot           virthost[:docroot]
     application_name  virthost[:application_name]
   end
+  
+  link "/var/www/#{virthost[:server_name]}" do
+    to  virthost[:docroot]
+  end
 end
