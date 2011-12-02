@@ -18,9 +18,15 @@ records = Hash.new()
 zones = Array.new()
 
 all_nodes = search(:node, "*:*")
-all_nodes.each do |node|
-  if !node["ipaddress"].nil?
-    records[node.name + "IN A"] = {"name" => node.name, "type" => "IN A", "info" => node.ipaddress}
+all_nodes.each do |n|
+  if !n["ipaddress"].nil?
+    if n.name =~ /#{Regexp.escape(node["bind"]["defaultdomain"])}$/
+      fqdn = n.name + '.'
+    else
+      fqdn = n.name
+    end
+    pp fqdn    
+    records[fqdn + "IN A"] = {"name" => fqdn, "type" => "IN A", "info" => n.ipaddress}
   end
 end
 
