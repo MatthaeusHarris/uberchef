@@ -68,7 +68,7 @@ data_bag("dns").each do |domain|
       :records => sorted_local_records,
       :nameservers => domain_data["nameservers"]
     )
-    notifies :reload, "service[bind9]"
+    notifies :restart, "service[bind9]"
   end
 end
 
@@ -84,7 +84,10 @@ template "/etc/bind/named.conf.local" do
 end
 
 service "bind9" do
-  action :enable
-  supports  :reload => true
-  reload_command  "rndc reload"
+  supports :reload => true
+  reload_command "service bind9 reload"
+#  action :enable
+#  supports  :reload => true
+#  reload_command  "rndc reload"
+#  provider Chef::Provider::Service::Upstart
 end
