@@ -1,0 +1,13 @@
+<VirtualHost *:80>
+  ServerName <%= @servername %>
+  ServerAlias <% @serveraliases.each do |a| %><%= "#{a}" %> <% end %>
+	
+  ProxyPass / http://<%= @hostip %>/<%= @servername %>/
+  ProxyPassReverse / http://<%= @hostip %>/<%= @servername %>/
+  
+
+  LogLevel info
+  ErrorLog /var/log/apache2/<%= @servername %>-error.log
+  CustomLog /var/log/apache2/<%= @servername %>-access.log combined
+
+</VirtualHost>

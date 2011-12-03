@@ -18,9 +18,15 @@ records = Hash.new()
 zones = Array.new()
 
 all_nodes = search(:node, "*:*")
-all_nodes.each do |node|
-  if !node["ipaddress"].nil?
-    records[node.name] = {"name" => node.name, "type" => "IN A", "info" => node.ipaddress}
+all_nodes.each do |n|
+  if !n["ipaddress"].nil?
+    if n.name =~ /#{Regexp.escape(node["bind"]["defaultdomain"])}$/
+      fqdn = n.name + '.'
+    else
+      fqdn = n.name
+    end
+    pp fqdn    
+    records[fqdn + "IN A"] = {"name" => fqdn, "type" => "IN A", "info" => n.ipaddress}
   end
 end
 
@@ -36,7 +42,7 @@ data_bag("dns").each do |domain|
    
   end
   domain_data["records"].each do |record|
-    local_records[record["name"]] = record
+    local_records[record["name"] + record["type"]] = record
   end
   local_records.each do |key,value|
     begin
@@ -62,7 +68,8 @@ data_bag("dns").each do |domain|
       :records => sorted_local_records,
       :nameservers => domain_data["nameservers"]
     )
-    notifies :reload, "service[bind9]"
+#    notifies :restart, "service[bind9]"
+    notifies :run, "execute[rndc-reload]"
   end
 end
 
@@ -77,8 +84,16 @@ template "/etc/bind/named.conf.local" do
   )
 end
 
+execute "rndc-reload" do
+  command "rndc reload"
+  action :nothing
+end
+
 service "bind9" do
-  action :enable
-  supports  :reload => true
-  reload_command  "rndc reload"
+  supports :reload => true
+  reload_command "service bind9 reload"
+#  action :enable
+#  supports  :reload => true
+#  reload_command  "rndc reload"
+#  provider Chef::Provider::Service::Upstart
 end
