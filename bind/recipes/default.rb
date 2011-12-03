@@ -68,7 +68,8 @@ data_bag("dns").each do |domain|
       :records => sorted_local_records,
       :nameservers => domain_data["nameservers"]
     )
-    notifies :restart, "service[bind9]"
+#    notifies :restart, "service[bind9]"
+    notifies :run, "execute[rndc-reload]"
   end
 end
 
@@ -81,6 +82,11 @@ template "/etc/bind/named.conf.local" do
   variables(
     :zones => zones
   )
+end
+
+execute "rndc-reload" do
+  command "rndc reload"
+  action :nothing
 end
 
 service "bind9" do
