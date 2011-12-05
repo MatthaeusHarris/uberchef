@@ -39,6 +39,7 @@ end
   package pkg
 end
 
+<<<<<<< HEAD
 service "nagios-nrpe-server" do
   action :enable
   supports :restart => true, :reload => true
@@ -56,6 +57,12 @@ remote_directory "#{node[:nagios][:nrpe_plugind]}" do
   source "plugins/any"
   owner "nagios"
   group "nagios"
+=======
+remote_directory node['nagios']['plugin_dir'] do
+  source "plugins"
+  owner "root"
+  group "root"
+>>>>>>> upstream/master
   mode 0755
   files_mode 0755
 end
@@ -66,6 +73,7 @@ template "/etc/nagios/nrpe.cfg" do
   group "nagios"
   mode "0644"
   variables :mon_host => mon_host
+<<<<<<< HEAD
   notifies :restart, resources(:service => "nagios-nrpe-server")
 end
 
@@ -105,4 +113,12 @@ end
 nrpe_cmd node[:nagios][:checks][:check_release][:check_command] do
 	script_name "check_release.py"
 	script_params ""
+=======
+  notifies :restart, "service[nagios-nrpe-server]"
+end
+
+service "nagios-nrpe-server" do
+  action [:start, :enable]
+  supports :restart => true, :reload => true
+>>>>>>> upstream/master
 end
