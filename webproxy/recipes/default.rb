@@ -2,12 +2,6 @@
 # Cookbook Name:: webproxy
 # Recipe:: default
 #
-<<<<<<< HEAD
-# Copyright 2011, YOUR_COMPANY_NAME
-#
-# All rights reserved - Do Not Redistribute
-#
-=======
 # Copyright 2011, Matt Harris
 #
 # All rights reserved
@@ -38,4 +32,8 @@ webhosts.each do |w|
     
   end
 end
->>>>>>> master
+
+template "/etc/apache2/mods-available/proxy.conf" do
+	source "proxy.conf.erb"
+	notifies :reload, "service[apache2]"
+end
