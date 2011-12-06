@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+require "pp"
+
 munin_servers = search(:node, "munin:[* TO *] AND chef_environment:#{node.chef_environment}")
 munin_servers.sort! { |a,b| a[:fqdn] <=> b[:fqdn] }
 
@@ -87,8 +89,13 @@ munin_users = Array.new()
 munin_group = data_bag_item(node[:munin][:group_databag],node[:munin][:allow_users])
 munin_group["users"].each do |user|
   local_user = data_bag_item(node[:munin][:user_databag],user)
+  if local_user["username"].nil?
+    local_user["username"] = local_user["id"]
+  end
   munin_users << local_user
 end
+
+pp munin_users
 
 template "/etc/munin/munin.htpasswd" do
   source "munin.htpasswd.erb"
