@@ -9,14 +9,9 @@
 
   <Location />
     AuthName "Munin Server"
-    AuthOpenIDEnabled On
-<% case node[:platform] -%>
-<% when "arch" -%>
-    AuthOpenIDDBLocation /var/cache/httpd/mod_auth_openid.db
-<% else -%>
-    AuthOpenIDDBLocation /var/cache/apache2/mod_auth_openid.db
-<% end -%>
-    AuthOpenIDUserProgram /usr/local/bin/mod_auth_openid.rb
+	AuthType Basic
+	AuthUserFile /etc/munin/munin.htpasswd
+	Require valid-user
   </Location>
 
   RewriteEngine On

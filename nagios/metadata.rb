@@ -2,13 +2,8 @@ maintainer        "Tyghe Vallard"
 maintainer_email  "tgv@montana.edu"
 license           "Apache 2.0"
 description       "Installs and configures nagios"
-<<<<<<< HEAD
 long_description  IO.read(File.join(File.dirname(__FILE__), 'README.rdoc'))
 version           "0.9.1"
-=======
-long_description  IO.read(File.join(File.dirname(__FILE__), 'README.md'))
-version           "1.0.4"
->>>>>>> upstream/master
 
 recipe "nagios", "Includes the client recipe."
 recipe "nagios::client", "Installs and configures a nagios client with nrpe"
