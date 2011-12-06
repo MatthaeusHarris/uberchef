@@ -27,3 +27,7 @@ when "centos","redhat"
 else
   default['munin']['docroot'] = "/var/www/munin"
 end
+
+default['munin']['user_databag'] = 'users'
+default['munin']['group_databag'] = 'groups'
+default['munin']['allow_users'] = 'admin'

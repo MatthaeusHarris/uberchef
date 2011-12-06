@@ -81,3 +81,19 @@ directory node['munin']['docroot'] do
 end
 
 apache_site "munin.conf"
+
+munin_users = Array.new()
+
+munin_group = data_bag_item(node[:munin][:group_databag],node[:munin][:allow_users])
+munin_group["users"].each do |user|
+  local_user = data_bag_item(node[:munin][:user_databag],user)
+  munin_users << local_user
+end
+
+template "/etc/munin/munin.htpasswd" do
+  source "munin.htpasswd.erb"
+  mode 0600
+  owner "www-data"
+  group "www-data"
+  variables(:users => munin_users)
+end
