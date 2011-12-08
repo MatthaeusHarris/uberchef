@@ -1,0 +1,20 @@
+<VirtualHost *:80>
+  ServerAdmin     ops@example.com
+  ServerName      <%= node[:fqdn] %>
+  ServerAlias     munin munin.<%= node.chef_environment =~ /_default/ ? "default" : node.chef_environment %>.<%= @public_domain %>
+  Alias /munin <%= @docroot %>
+  DocumentRoot <%= @docroot %>
+  CustomLog       <%= node[:apache][:log_dir] %>/munin_access.log combined
+  ErrorLog        <%= node[:apache][:log_dir] %>/munin_error.log
+
+  <Location />
+    AuthName "Munin Server"
+	AuthType Basic
+	AuthUserFile /etc/munin/munin.htpasswd
+	Require valid-user
+  </Location>
+
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /.*index\.html\ HTTP/
+  RewriteRule ^(.*)index\.html$ $1 [R=301,L]
+</VirtualHost>
