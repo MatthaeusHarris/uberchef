@@ -22,6 +22,10 @@ require "pp"
 munin_servers = search(:node, "munin:[* TO *] AND chef_environment:#{node.chef_environment}")
 munin_servers.sort! { |a,b| a[:fqdn] <=> b[:fqdn] }
 
+munin_servers.each do |server|
+  server[:ip] = server["munin"]["ipaddress"] || server["ipaddress"]
+end
+
 if node[:public_domain]
   case node.chef_environment
   when "production"
