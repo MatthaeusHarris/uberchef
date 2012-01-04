@@ -39,7 +39,7 @@ else
 end
 
 dir_owner = "root"
-if node["etc"]["[passwd"]["chef"]
+if node["etc"]["passwd"]["chef"]
   dir_owner = "chef"
 end
 
