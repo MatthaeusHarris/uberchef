@@ -38,10 +38,15 @@ else
   raise "Could not locate the chef-client bin in any known path. Please set the proper path by overriding node['chef_client']['bin'] in a role."
 end
 
+dir_owner = "root"
+if node["etc"]["[passwd"]["chef"]
+  dir_owner = "chef"
+end
+
 %w{run_path cache_path backup_path log_dir}.each do |key|
   directory node["chef_client"][key] do
     recursive true
-    owner "root"
+    owner dir_owner
     group root_group
     mode 0755
   end
