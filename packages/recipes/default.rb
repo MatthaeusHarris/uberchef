@@ -8,6 +8,8 @@
 #
 require "pp"
 
-node["packages"].each do |p|
-  package p
+node[:packages].each do |p, a|
+  package p do
+    action a
+  end
 end
