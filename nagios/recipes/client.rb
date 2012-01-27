@@ -20,6 +20,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+require "pp"
 mon_host = Array.new
 
 if node.run_list.roles.include?(node[:nagios][:server_role])
@@ -29,6 +30,8 @@ else
     mon_host << n['ipaddress']
   end
 end
+
+pp mon_host
 
 %w{
   nagios-nrpe-server
