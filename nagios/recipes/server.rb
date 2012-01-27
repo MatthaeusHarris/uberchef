@@ -212,6 +212,8 @@ nagios_conf "services" do
   variables :service_hosts => service_hosts, :services => services
 end
 
+pp services
+
 nagios_conf "commands" do
   variables :commands => services
 end
