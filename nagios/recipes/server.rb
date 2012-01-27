@@ -195,7 +195,7 @@ shosts.each do |h|
     Chef::Log.debug( "Host #{h['hostname']} has the following services:" )
     h['nagios']['checks'].each do |s,v|
       if not v.empty? and not v.nil?
-        Chef::Log.debug( s )
+        Chef::Log.debug( "#{s}" )
         if services[s].nil?
           services[s] = v
         end
