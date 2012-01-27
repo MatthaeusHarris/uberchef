@@ -28,7 +28,7 @@ define service {
 #}
 <% @services.each do |s,v| -%>
 define service {
-  host_name           <%= v['host_name'] %>
+  host_name           <%= v['fqdn'] %>
   check_command       <%= v['check_command'] %>
   service_description <%= v['service_description'] %>
   use                 default-service
