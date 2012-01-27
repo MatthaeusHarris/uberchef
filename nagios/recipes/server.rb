@@ -25,6 +25,8 @@ include_recipe "apache2::mod_ssl"
 include_recipe "apache2::mod_rewrite"
 include_recipe "nagios::client"
 
+require "pp"
+
 # Default to production
 env = 'nagios'
 environment = 'Production'
@@ -47,6 +49,9 @@ sysadmins = Array.new
 # Get rid of entries with blank pager & email
 # I can't seem to get the search above to just include non empty values so
 # a loop it is
+
+pp users
+
 users.each do |s|
   if not s[env]['email'].empty? and not s[env]['pager'].empty?
     Chef::Log.debug( "Adding user #{s['id']} Email: #{s[env]['email']} Pager: #{s[env]['pager']}" )
