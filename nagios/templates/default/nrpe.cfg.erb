@@ -5,7 +5,7 @@ nrpe_group=nagios
 dont_blame_nrpe=0
 debug=0
 command_timeout=60
-allowed_hosts=<%= @mon_host.join(',') %>
+allowed_hosts=216.187.155.19,<%= @mon_host.join(',') %>
 include_dir=<%= node[:nagios][:nrpe_confd] %>
 
 #command[check_mem]=/usr/lib/nagios/plugins/check_mem.sh -w <%= node[:nagios][:checks][:memory][:warning] %> -c <%= node[:nagios][:checks][:memory][:critical] %> -p
