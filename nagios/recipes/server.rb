@@ -50,7 +50,7 @@ sysadmins = Array.new
 # I can't seem to get the search above to just include non empty values so
 # a loop it is
 
-pp users
+#pp users
 
 users.each do |s|
   begin
@@ -60,8 +60,7 @@ users.each do |s|
       members << s['id']
     end
   rescue
-    pp env
-    pp s
+    Chef::Log.debug( "Not adding user #{s['id']} to the list because they're missing some contact info." )
   end
 end
 
@@ -189,7 +188,7 @@ end
 end
 
 hosts = search( :node, "nagios:checks AND chef_environment:#{node.chef_environment}" )
-shosts = hosts | snmp_nodes
+shosts = hosts #| snmp_nodes
 
 services = Hash.new
 shosts.each do |h|
