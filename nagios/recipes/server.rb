@@ -53,10 +53,15 @@ sysadmins = Array.new
 pp users
 
 users.each do |s|
-  if not s[env]['email'].empty? and not s[env]['pager'].empty?
-    Chef::Log.debug( "Adding user #{s['id']} Email: #{s[env]['email']} Pager: #{s[env]['pager']}" )
-    sysadmins << s
-    members << s['id']
+  begin
+    if not s[env]['email'].empty? and not s[env]['pager'].empty?
+      Chef::Log.debug( "Adding user #{s['id']} Email: #{s[env]['email']} Pager: #{s[env]['pager']}" )
+      sysadmins << s
+      members << s['id']
+    end
+  rescue
+    pp env
+    pp s
   end
 end
 
