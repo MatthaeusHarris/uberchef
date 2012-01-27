@@ -88,7 +88,7 @@ service_hosts= Hash.new
 search(:role, "*:*") do |r|
   role_list << r.name
   search(:node, "role:#{r.name} AND chef_environment:#{node.chef_environment}") do |n|
-    service_hosts[r.name] = n['fqdn']
+    service_hosts[r.name] = n['hostname']
   end
 end
 
