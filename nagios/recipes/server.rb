@@ -36,7 +36,7 @@ Chef::Log.debug( "Nagios environment(Node:#{node.chef_environment} Used:#{enviro
 users = search(:users, "#{env}:*")
 
 all_nodes = search(:node, "hostname:* AND chef_environment:#{environment}")
-snmp_nodes = search( :bare_node, "nagios:* AND chef_environment:#{environment}" )
+#snmp_nodes = search( :bare_node, "nagios:* AND chef_environment:#{environment}" )
 all_nodes = all_nodes | snmp_nodes
 nodes = Array.new
 
