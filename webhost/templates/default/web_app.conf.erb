@@ -5,7 +5,7 @@
   RewriteEngine On
   
   <Directory <%= @params[:docroot] %>>
-    Options FollowSymLinks,Indexes
+    Options FollowSymLinks Indexes MultiViews 
     AllowOverride None
     Order allow,deny
     Allow from all
