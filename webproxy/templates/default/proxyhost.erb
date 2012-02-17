@@ -1,10 +1,15 @@
 <VirtualHost *:80>
+  <Proxy *>
+    Order deny,allow
+    Allow from all
+  </Proxy>
+
   ServerName <%= @servername %>
   ServerAlias <% @serveraliases.each do |a| %><%= "#{a}" %> <% end %>
 	
-  ProxyPass / http://<%= @hostip %>/<%= @servername %>/
-  ProxyPassReverse / http://<%= @hostip %>/<%= @servername %>/
-  
+  ProxyPass / http://<%= @hostip %>/
+  ProxyPassReverse / http://<%= @hostip %>/
+  ProxyPreserveHost On
 
   LogLevel info
   ErrorLog /var/log/apache2/<%= @servername %>-error.log
