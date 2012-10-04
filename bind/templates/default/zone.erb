@@ -19,3 +19,4 @@ $TTL <%= @ttl %>
 <% @records.each do |record| -%>
 <%= "%-30s\t%-10s\t%s" % [record["name"], record["type"], record["info"] ] %>
 <% end -%>
+<%= @append %>

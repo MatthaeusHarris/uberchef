@@ -66,7 +66,8 @@ data_bag("dns").each do |domain|
       :expire => domain_data["options"]["expire"],
       :minimum => domain_data["options"]["minimum_ttl"],
       :records => sorted_local_records,
-      :nameservers => domain_data["nameservers"]
+      :nameservers => domain_data["nameservers"],
+      :append => domain_data["append"]
     )
 #    notifies :restart, "service[bind9]"
     notifies :run, "execute[rndc-reload]"
